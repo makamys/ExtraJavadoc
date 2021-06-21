@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+mainClassName = 'makamys.extrajavadoc.ExtraJavadoc'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+
+repositories {
+    mavenCentral()
+}
+
+
+
+dependencies {
+    compile "org.jboss.forge.roaster:roaster-api:${roaster_version}"
+	compile "org.jboss.forge.roaster:roaster-jdt:${roaster_version}" // runtime?
+}
+
+jar {
+    manifest {
+        attributes (
+            'Main-Class': 'makamys.extrajavadoc.ExtraJavadoc'
+        )
+    }
+	
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
