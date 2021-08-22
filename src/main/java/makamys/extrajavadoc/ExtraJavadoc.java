@@ -50,6 +50,8 @@ class ExtraJavadoc {
 	    String additionsPrefix; 
 	    
 	    ExtraJavadocProcessor(Path srcDir, Path outDir, File extraJsonFile) {
+	        this.srcDir = srcDir;
+	        this.outDir = outDir;
 	        try {
     	        String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
                 extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
