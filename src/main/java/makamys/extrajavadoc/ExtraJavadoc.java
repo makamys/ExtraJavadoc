@@ -35,7 +35,7 @@ class ExtraJavadoc {
 	    File srcDirFile = new File(args[0]);
 	    Path srcDir = srcDirFile.toPath();
 	    File extraJsonFile = new File(args[1]);
-	    Path outDir = new File(srcDir.getFileName().toString() + "-extrajavadoc").toPath();
+	    Path outDir = new File(srcDir.getFileName().toString()).toPath();
 	    
         processCopy(srcDir, outDir, extraJsonFile);
 	}
