@@ -102,7 +102,13 @@ class ExtraJavadoc {
 	                    Parser parser = Parser.builder().build();
 	                    Node document = parser.parse(classChanges);
 	                    HtmlRenderer renderer = HtmlRenderer.builder().build();
-	                    source.getJavaDoc().setText(renderer.render(document));
+	                    String newText = source.getJavaDoc().getText();
+	                    if(!newText.isEmpty()) {
+	                        // TODO test
+	                        newText += "\n<br>\n";
+	                    }
+	                    newText += renderer.render(document);
+	                    source.getJavaDoc().setText(newText);
 	                }
 	            }
 	        }
