@@ -37,61 +37,72 @@ class ExtraJavadoc {
 	    File extraJsonFile = new File(args[1]);
 	    Path outDir = new File(srcDir.getFileName().toString()).toPath();
 	    
-        processCopy(srcDir, outDir, extraJsonFile);
-	}
-	
-	private static void processCopy(Path srcDir, Path outDir, File extraJsonFile) {
-	    try {
-            String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
-            Map extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
-            Map changes = (Map)extraJson.get("changes");
-            
-            if(Files.isDirectory(outDir)) {
-                Files.walk(outDir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-            }
-            
-            List<Path> paths = Files.walk(srcDir).filter(Files::isRegularFile).collect(Collectors.toList());
-            
-            for(int i = 0; i < paths.size(); i++) {
-                Path p = paths.get(i);
-                System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
-                Path outPath = outDir.resolve(srcDir.relativize(p));
-                outPath.getParent().toFile().mkdirs();
-                if(p.toString().endsWith(".java")) {
-                    Files.write(outPath, getNewSource(p.toFile(), changes).getBytes("utf8"));
-                } else {
-                    Files.copy(p, outPath);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	}
-	
-	private static String getNewSource(File file, Map allChanges) throws IOException {
-	    JavaType type = Roaster.parse(file);
-	    if(type instanceof JavaClassSource) {
-	        JavaClassSource source = (JavaClassSource)type;
-	        
-	        Map changes = (Map)allChanges.get(source.getCanonicalName());
-	        
-	        if(changes != null) {
-	            String classChanges = (String)changes.get("class");
-	            if(classChanges != null) {
-	                Parser parser = Parser.builder().build();
-	                Node document = parser.parse(classChanges);
-	                HtmlRenderer renderer = HtmlRenderer.builder().build();
-	                source.getJavaDoc().setText(renderer.render(document));
-	            }
-	        }
-	    }
-	    return type.toString();
+	    new ExtraJavadocProcessor(srcDir, outDir, extraJsonFile).processCopy();
 	}
 	
 	private static String getJarName() {
         return new java.io.File(MethodHandles.lookup().lookupClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getName();
     }
+	
+	public static class ExtraJavadocProcessor {
+	    Path srcDir, outDir;
+	    Map extraJson, allChanges;
+	    
+	    ExtraJavadocProcessor(Path srcDir, Path outDir, File extraJsonFile) {
+	        try {
+    	        String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
+                extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
+                allChanges = (Map)extraJson.get("changes");
+	        } catch(IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    
+	    public void processCopy() {
+	        try {
+	            if(Files.isDirectory(outDir)) {
+	                Files.walk(outDir)
+	                    .sorted(Comparator.reverseOrder())
+	                    .map(Path::toFile)
+	                    .forEach(File::delete);
+	            }
+	            
+	            List<Path> paths = Files.walk(srcDir).filter(Files::isRegularFile).collect(Collectors.toList());
+	            
+	            for(int i = 0; i < paths.size(); i++) {
+	                Path p = paths.get(i);
+	                System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
+	                Path outPath = outDir.resolve(srcDir.relativize(p));
+	                outPath.getParent().toFile().mkdirs();
+	                if(p.toString().endsWith(".java")) {
+	                    Files.write(outPath, getNewSource(p.toFile()).getBytes("utf8"));
+	                } else {
+	                    Files.copy(p, outPath);
+	                }
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    
+	    private String getNewSource(File file) throws IOException {
+	        JavaType type = Roaster.parse(file);
+	        if(type instanceof JavaClassSource) {
+	            JavaClassSource source = (JavaClassSource)type;
+	            
+	            Map changes = (Map)allChanges.get(source.getCanonicalName());
+	            
+	            if(changes != null) {
+	                String classChanges = (String)changes.get("class");
+	                if(classChanges != null) {
+	                    Parser parser = Parser.builder().build();
+	                    Node document = parser.parse(classChanges);
+	                    HtmlRenderer renderer = HtmlRenderer.builder().build();
+	                    source.getJavaDoc().setText(renderer.render(document));
+	                }
+	            }
+	        }
+	        return type.toString();
+	    }
+	}
 }
