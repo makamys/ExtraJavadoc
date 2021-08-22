@@ -31,24 +31,28 @@ class ExtraJavadoc {
 	    File extraJsonFile = new File(args[1]);
 	    Path outDir = new File(srcDir.getFileName().toString() + "-extrajavadoc").toPath();
 	    
-        try {
+        processCopy(srcDir, outDir, extraJsonFile);
+	}
+	
+	private static void processCopy(Path srcDir, Path outDir, File extraJsonFile) {
+	    try {
             String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
             Map extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
             Map changes = (Map)extraJson.get("changes");
             
             List<Path> paths = Files.walk(srcDir).filter(Files::isRegularFile).collect(Collectors.toList());
             
-    	    for(int i = 0; i < paths.size(); i++) {
-    	        Path p = paths.get(i);
-    	        System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
-    	        Path outPath = outDir.resolve(srcDir.relativize(p));
-    	        outPath.getParent().toFile().mkdirs();
-    	        if(p.endsWith(".java")) {
-    	            Files.write(outPath, getNewSource(p.toFile()).getBytes("utf8"));
-    	        } else {
-    	            Files.copy(p, outPath);
-    	        }
-    	    }
+            for(int i = 0; i < paths.size(); i++) {
+                Path p = paths.get(i);
+                System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
+                Path outPath = outDir.resolve(srcDir.relativize(p));
+                outPath.getParent().toFile().mkdirs();
+                if(p.endsWith(".java")) {
+                    Files.write(outPath, getNewSource(p.toFile()).getBytes("utf8"));
+                } else {
+                    Files.copy(p, outPath);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
