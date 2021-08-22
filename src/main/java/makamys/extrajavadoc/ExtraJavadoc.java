@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
 
 import org.hjson.JsonValue;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.JavaType;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.google.gson.Gson;
@@ -47,7 +49,7 @@ class ExtraJavadoc {
                 System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
                 Path outPath = outDir.resolve(srcDir.relativize(p));
                 outPath.getParent().toFile().mkdirs();
-                if(p.endsWith(".java")) {
+                if(p.toString().endsWith(".java")) {
                     Files.write(outPath, getNewSource(p.toFile(), changes).getBytes("utf8"));
                 } else {
                     Files.copy(p, outPath);
@@ -59,18 +61,20 @@ class ExtraJavadoc {
 	}
 	
 	private static String getNewSource(File file, Map allChanges) throws IOException {
-	    JavaClassSource source = Roaster.parse(JavaClassSource.class, file);
-	    
-	    Map changes = (Map)allChanges.get(source.getCanonicalName());
-	    
-	    if(changes != null) {
-	        String classChanges = (String)changes.get("class");
-	        if(classChanges != null) {
-	            source.getJavaDoc().setText(classChanges);
+	    JavaType type = Roaster.parse(file);
+	    if(type instanceof JavaClassSource) {
+	        JavaClassSource source = (JavaClassSource)type;
+	        
+	        Map changes = (Map)allChanges.get(source.getCanonicalName());
+	        
+	        if(changes != null) {
+	            String classChanges = (String)changes.get("class");
+	            if(classChanges != null) {
+	                source.getJavaDoc().setText(classChanges);
+	            }
 	        }
 	    }
-        
-	    return source.toString();
+	    return type.toString();
 	}
 	
 	private static String getJarName() {
