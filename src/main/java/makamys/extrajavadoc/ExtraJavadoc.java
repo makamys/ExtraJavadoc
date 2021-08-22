@@ -48,7 +48,7 @@ class ExtraJavadoc {
                 Path outPath = outDir.resolve(srcDir.relativize(p));
                 outPath.getParent().toFile().mkdirs();
                 if(p.endsWith(".java")) {
-                    Files.write(outPath, getNewSource(p.toFile()).getBytes("utf8"));
+                    Files.write(outPath, getNewSource(p.toFile(), changes).getBytes("utf8"));
                 } else {
                     Files.copy(p, outPath);
                 }
@@ -58,13 +58,17 @@ class ExtraJavadoc {
         }
 	}
 	
-	private static String getNewSource(File file) throws IOException {
+	private static String getNewSource(File file, Map allChanges) throws IOException {
 	    JavaClassSource source = Roaster.parse(JavaClassSource.class, file);
 	    
-        //source.getJavaDoc().setText("hello class");
-        
-        //MethodSource method = source.getMethods().stream().filter(m -> m.getName().equals("main")).findFirst().get();
-        //method.getJavaDoc().setText("hello method");
+	    Map changes = (Map)allChanges.get(source.getCanonicalName());
+	    
+	    if(changes != null) {
+	        String classChanges = (String)changes.get("class");
+	        if(classChanges != null) {
+	            source.getJavaDoc().setText(classChanges);
+	        }
+	    }
         
 	    return source.toString();
 	}
