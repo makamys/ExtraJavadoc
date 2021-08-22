@@ -18,6 +18,8 @@ repositories {
 dependencies {
     compile "org.jboss.forge.roaster:roaster-api:${roaster_version}"
 	compile "org.jboss.forge.roaster:roaster-jdt:${roaster_version}" // runtime?
+	compile "org.hjson:hjson:3.0.0"
+	compile "com.google.code.gson:gson:2.8.8"
 }
 
 jar {

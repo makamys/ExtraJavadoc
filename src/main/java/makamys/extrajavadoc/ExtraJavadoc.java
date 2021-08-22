@@ -1,16 +1,22 @@
 package makamys.extrajavadoc;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.hjson.JsonValue;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 class ExtraJavadoc {
 	
@@ -26,6 +32,10 @@ class ExtraJavadoc {
 	    Path outDir = new File(srcDir.getFileName().toString() + "-extrajavadoc").toPath();
 	    
         try {
+            String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
+            Map extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
+            Map changes = (Map)extraJson.get("changes");
+            
             List<Path> paths = Files.walk(srcDir).filter(Files::isRegularFile).collect(Collectors.toList());
             
     	    for(int i = 0; i < paths.size(); i++) {
@@ -46,7 +56,7 @@ class ExtraJavadoc {
 	
 	private static String getNewSource(File file) throws IOException {
 	    JavaClassSource source = Roaster.parse(JavaClassSource.class, file);
-        
+	    
         //source.getJavaDoc().setText("hello class");
         
         //MethodSource method = source.getMethods().stream().filter(m -> m.getName().equals("main")).findFirst().get();
