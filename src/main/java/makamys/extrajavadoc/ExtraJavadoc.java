@@ -30,7 +30,7 @@ class ExtraJavadoc {
             
     	    for(int i = 0; i < paths.size(); i++) {
     	        Path p = paths.get(i);
-    	        System.out.println(String.format("[%d / %d]", i, paths.size()));
+    	        System.out.println(String.format("[%d / %d] %s", i, paths.size(), srcDir.relativize(p)));
     	        Path outPath = outDir.resolve(srcDir.relativize(p));
     	        outPath.getParent().toFile().mkdirs();
     	        if(p.endsWith(".java")) {
