@@ -57,6 +57,11 @@ class ExtraJavadoc {
                 options = (Map)extraJson.get("options");
                 
                 additionsPrefix = (String)options.get("additions.prefix");
+                if(additionsPrefix == null) {
+                    additionsPrefix = "";
+                } else {
+                    additionsPrefix += "\n";
+                }
 	        } catch(IOException e) {
 	            e.printStackTrace();
 	        }
@@ -100,7 +105,7 @@ class ExtraJavadoc {
 	                String classChanges = (String)changes.get("class");
 	                if(classChanges != null) {
 	                    Parser parser = Parser.builder().build();
-	                    Node document = parser.parse(classChanges);
+	                    Node document = parser.parse(additionsPrefix + classChanges);
 	                    HtmlRenderer renderer = HtmlRenderer.builder().build();
 	                    String newText = source.getJavaDoc().getText();
 	                    if(!newText.isEmpty()) {
