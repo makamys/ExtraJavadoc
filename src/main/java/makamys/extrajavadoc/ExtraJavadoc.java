@@ -46,13 +46,17 @@ class ExtraJavadoc {
 	
 	public static class ExtraJavadocProcessor {
 	    Path srcDir, outDir;
-	    Map extraJson, allChanges;
+	    Map extraJson, allChanges, options;
+	    String additionsPrefix; 
 	    
 	    ExtraJavadocProcessor(Path srcDir, Path outDir, File extraJsonFile) {
 	        try {
     	        String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
                 extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
                 allChanges = (Map)extraJson.get("changes");
+                options = (Map)extraJson.get("options");
+                
+                additionsPrefix = (String)options.get("additions.prefix");
 	        } catch(IOException e) {
 	            e.printStackTrace();
 	        }
