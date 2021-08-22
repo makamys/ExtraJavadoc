@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +45,13 @@ class ExtraJavadoc {
             String jsonString = JsonValue.readHjson(new FileReader(extraJsonFile)).toString();
             Map extraJson = new Gson().fromJson(jsonString, new TypeToken<Map>(){}.getType());
             Map changes = (Map)extraJson.get("changes");
+            
+            if(Files.isDirectory(outDir)) {
+                Files.walk(outDir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+            }
             
             List<Path> paths = Files.walk(srcDir).filter(Files::isRegularFile).collect(Collectors.toList());
             
