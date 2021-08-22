@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.hjson.JsonValue;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.JavaType;
@@ -70,7 +73,10 @@ class ExtraJavadoc {
 	        if(changes != null) {
 	            String classChanges = (String)changes.get("class");
 	            if(classChanges != null) {
-	                source.getJavaDoc().setText(classChanges);
+	                Parser parser = Parser.builder().build();
+	                Node document = parser.parse(classChanges);
+	                HtmlRenderer renderer = HtmlRenderer.builder().build();
+	                source.getJavaDoc().setText(renderer.render(document));
 	            }
 	        }
 	    }
